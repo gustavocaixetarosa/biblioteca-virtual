@@ -40,6 +40,10 @@ public class ReservationService {
         reservation.setDueDate(LocalDate.now().plusWeeks(1));
 
         book.setQuantityAvailable(book.getQuantityAvailable() - 1);
+
+        if(book.getQuantityAvailable() <= 0)
+            book.setDisponibilide(false);
+
         bookService.saveBook(book);
 
         return reservationRepository.save(reservation);
@@ -52,7 +56,7 @@ public class ReservationService {
 
 
     @Transactional
-    public void returnBook(Long reservationId) {
+    public Reservation returnBook(Long reservationId) {
         Reservation reservation = findById(reservationId);
 
         if (reservation.isReturned()) {
@@ -63,9 +67,11 @@ public class ReservationService {
 
         Book book = reservation.getBook();
         book.setQuantityAvailable(book.getQuantityAvailable() + 1);
+
+
         bookService.saveBook(book);
 
-        reservationRepository.save(reservation);
+        return reservationRepository.save(reservation);
     }
 
 

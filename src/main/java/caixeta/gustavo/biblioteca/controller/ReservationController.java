@@ -7,12 +7,15 @@ import caixeta.gustavo.biblioteca.repository.BookRepository;
 import caixeta.gustavo.biblioteca.repository.ReservationRepository;
 import caixeta.gustavo.biblioteca.repository.UserRepository;
 import caixeta.gustavo.biblioteca.service.ReservationService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -32,39 +35,46 @@ public class ReservationController {
     private ReservationRepository reservationRepository;
 
     @PostMapping("/create")
-    public ResponseEntity<Reservation> createReservation(@RequestParam Long userId, @RequestParam Long bookId) {
-        // Busca o usuário e o livro pelos IDs fornecidos
-        Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Book> bookOptional = bookRepository.findById(bookId);
-
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    public ResponseEntity<Object> createReservation(@RequestParam Long userId, @RequestParam Long bookId) {
+        try {
+            Reservation reservation = reservationService.createReservation(userId, bookId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
+        } catch (IllegalArgumentException e) {
+            // Quando o livro não está disponível
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        } catch (EntityNotFoundException e) {
+            // Quando o usuário ou o livro não for encontrado
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("message", e.getMessage()));
         }
-
-        if (!bookOptional.isPresent()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-
-        Book book = bookOptional.get();
-
-        if (book.getQuantityAvailable() <= 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-
-        Reservation reservation = new Reservation();
-        reservation.setUser(userOptional.get());
-        reservation.setBook(book);
-        reservation.setReservationDate(LocalDate.now());
-
-        reservation.setDueDate(LocalDate.now().plusDays(7));
-        reservation.setReturned(false);
-
-        Reservation savedReservation = reservationRepository.save(reservation);
-
-        book.setQuantityAvailable(book.getQuantityAvailable() - 1);
-        bookRepository.save(book);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedReservation);
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<Reservation>> getReservationsByUser(@PathVariable Long id){
+        List<Reservation> reservationList = reservationService.getReservationsByUser(id);
+
+        return ResponseEntity.ok().body(reservationList);
+    }
+
+    @PostMapping("/return/{id}")
+    public ResponseEntity<Object> returnBook(@PathVariable Long id) {
+        try {
+            Reservation updatedReservation = reservationService.returnBook(id);
+
+            return ResponseEntity.ok(updatedReservation);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Reservation>> getAllReservations(){
+        List<Reservation> allReservations = reservationRepository.findAll();
+        return ResponseEntity.ok(allReservations);
+    }
 }

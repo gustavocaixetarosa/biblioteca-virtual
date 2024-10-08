@@ -18,6 +18,7 @@ public class BookService {
     }
 
     public Book saveBook(Book book) {
+        book.setDisponibilide(book.getQuantityAvailable() > 0);
         return bookRepository.save(book);
     }
 
