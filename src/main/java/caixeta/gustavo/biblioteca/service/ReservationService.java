@@ -76,6 +76,10 @@ public class ReservationService {
 
 
     public void deleteReservation(Long reservationId) {
-        reservationRepository.deleteById(reservationId);
+        Reservation reservation = reservationRepository.getReferenceById(reservationId);
+        if (reservation.isReturned())
+            reservationRepository.deleteById(reservationId);
+        else
+            throw new RuntimeException("Only reservations with book returned can be deleted!");
     }
 }
