@@ -1,6 +1,7 @@
 package caixeta.gustavo.biblioteca.service;
 
 import caixeta.gustavo.biblioteca.model.Book;
+import caixeta.gustavo.biblioteca.model.dto.BookDTO;
 import caixeta.gustavo.biblioteca.repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,12 +14,16 @@ public class BookService {
     @Autowired
     private BookRepository bookRepository;
 
+    public BookDTO convertToDTO(Book book) {
+        return new BookDTO(book.getId(), book.getIsbn(), book.getTitle(), book.getAuthor(), book.getQuantityAvailable());
+    }
+
     public List<Book> listAll() {
         return bookRepository.findAll();
     }
 
     public Book saveBook(Book book) {
-        book.setDisponibilide(book.getQuantityAvailable() > 0);
+        book.setAvailable(book.getQuantityAvailable() > 0);
         return bookRepository.save(book);
     }
 

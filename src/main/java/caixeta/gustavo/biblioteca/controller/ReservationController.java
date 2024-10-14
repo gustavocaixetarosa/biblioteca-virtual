@@ -1,8 +1,6 @@
 package caixeta.gustavo.biblioteca.controller;
 
-import caixeta.gustavo.biblioteca.model.Book;
 import caixeta.gustavo.biblioteca.model.Reservation;
-import caixeta.gustavo.biblioteca.model.User;
 import caixeta.gustavo.biblioteca.repository.BookRepository;
 import caixeta.gustavo.biblioteca.repository.ReservationRepository;
 import caixeta.gustavo.biblioteca.repository.UserRepository;
@@ -13,10 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/reservations")
@@ -61,7 +59,6 @@ public class ReservationController {
     public ResponseEntity<Object> returnBook(@PathVariable Long id) {
         try {
             Reservation updatedReservation = reservationService.returnBook(id);
-
             return ResponseEntity.ok(updatedReservation);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

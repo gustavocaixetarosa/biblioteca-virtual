@@ -24,7 +24,7 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private boolean disponibilide;
+    private boolean available;
 
     @NotBlank(message = "The title must not be empty.")
     @Size(max = 255)
@@ -54,4 +54,17 @@ public class Book {
     private String bookCover;
 
     private List<String> tags;
+
+    public void addStock(int i) {
+        int actualValue = this.getQuantityAvailable();
+        this.setQuantityAvailable(actualValue + i);
+    }
+
+    public void reduceStock(int i) {
+        int actualValue = this.getQuantityAvailable();
+        this.setQuantityAvailable(actualValue - i);
+
+        if(this.getQuantityAvailable() <= 0)
+            setAvailable(false);
+    }
 }

@@ -42,7 +42,7 @@ public class ReservationService {
         book.setQuantityAvailable(book.getQuantityAvailable() - 1);
 
         if(book.getQuantityAvailable() <= 0)
-            book.setDisponibilide(false);
+            book.setAvailable(false);
 
         bookService.saveBook(book);
 
@@ -60,7 +60,7 @@ public class ReservationService {
         Reservation reservation = findById(reservationId);
 
         if (reservation.isReturned()) {
-            throw new IllegalStateException("Book was returned.");
+            throw new IllegalStateException("Book was already returned.");
         }
 
         reservation.setReturned(true);

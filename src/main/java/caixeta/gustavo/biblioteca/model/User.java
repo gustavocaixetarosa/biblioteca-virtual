@@ -1,5 +1,6 @@
 package caixeta.gustavo.biblioteca.model;
 
+import caixeta.gustavo.biblioteca.model.dto.UserDTO;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,11 +28,18 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    private String document;
+
+    private String cep;
+
     @JsonManagedReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reservation> reservations;
 
-    private String document;
-
-    private String cep;
+    public User(UserDTO data){
+        this.document = data.document();
+        this.name = data.name();
+        this.email = data.email();
+        this.password = data.password();
+    }
 }

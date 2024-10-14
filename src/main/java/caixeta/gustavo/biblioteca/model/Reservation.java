@@ -18,15 +18,6 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JsonBackReference
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
-
     @Column(nullable = false)
     private LocalDate reservationDate;
 
@@ -35,4 +26,13 @@ public class Reservation {
 
     @Column(nullable = false)
     private boolean isReturned;
+
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
 }

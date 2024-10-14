@@ -1,6 +1,7 @@
 package caixeta.gustavo.biblioteca.controller;
 
 import caixeta.gustavo.biblioteca.model.Book;
+import caixeta.gustavo.biblioteca.model.dto.BookDTO;
 import caixeta.gustavo.biblioteca.service.BookService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/books")
@@ -18,9 +20,12 @@ public class BookController {
     private BookService bookService;
 
     @GetMapping
-    public ResponseEntity<List<Book>> getBooks(){
-        List<Book> allBooks = bookService.listAll();
-        return ResponseEntity.ok(allBooks);
+    public ResponseEntity<List<BookDTO>> getBooks() {
+        List<Book> allBooks = bookService.listAll(); // Obter todos os livros como entidades
+        List<BookDTO> bookDTOs = allBooks.stream() // Converter para DTOs
+                .map(book -> bookService.convertToDTO(book)) // Usar um método para converter
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(bookDTOs); // Retornar a lista de DTOs
     }
 
     @GetMapping("/{id}")
