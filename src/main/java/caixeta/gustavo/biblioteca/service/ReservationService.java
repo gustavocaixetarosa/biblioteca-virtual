@@ -4,12 +4,18 @@ import caixeta.gustavo.biblioteca.model.Book;
 import caixeta.gustavo.biblioteca.model.Reservation;
 import caixeta.gustavo.biblioteca.model.User;
 import caixeta.gustavo.biblioteca.repository.ReservationRepository;
+import caixeta.gustavo.biblioteca.repository.UserRepository;
+import caixeta.gustavo.biblioteca.validation.book.BookValidation;
+import caixeta.gustavo.biblioteca.validation.book.IsBookAvailableValidation;
+import caixeta.gustavo.biblioteca.validation.user.UserValidation;
+import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ReservationService {
@@ -23,15 +29,29 @@ public class ReservationService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private List<UserValidation> userValidations;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private IsBookAvailableValidation bookAvailableValidation;
 
     @Transactional
     public Reservation createReservation(Long userId, Long bookId) {
         User user = userService.searchById(userId);
         Book book = bookService.searchById(bookId);
 
-        if (book.getQuantityAvailable() <= 0) {
-            throw new IllegalArgumentException("Book is not available.");
-        }
+        userValidations.forEach(uv -> uv.validate(user));
+
+        bookAvailableValidation.validate(book);
+
+        if(book.getQuantityAvailable() <= 0)
+            throw new RuntimeException("Book not available");
+
+//        if(userRepository.countReservationsByUser_Id(user.getId()) > 2)
+//            throw new ValidationException(String.format("User with ID %s has reached the maximum limit of reservations: %d.", user.getId(), user.getMaxReservation()));
 
         Reservation reservation = new Reservation();
         reservation.setUser(user);
@@ -41,10 +61,7 @@ public class ReservationService {
 
         book.setQuantityAvailable(book.getQuantityAvailable() - 1);
 
-        if(book.getQuantityAvailable() <= 0)
-            book.setAvailable(false);
-
-        bookService.saveBook(book);
+        bookService.updateBook(book);
 
         return reservationRepository.save(reservation);
     }
@@ -69,7 +86,7 @@ public class ReservationService {
         book.setQuantityAvailable(book.getQuantityAvailable() + 1);
 
 
-        bookService.saveBook(book);
+        bookService.updateBook(book);
 
         return reservationRepository.save(reservation);
     }
@@ -87,5 +104,10 @@ public class ReservationService {
             reservationRepository.deleteById(reservationId);
         else
             throw new RuntimeException("Only reservations with book returned can be deleted!");
+    }
+
+    public Optional<List<Reservation>> getNonReturned(Long id) {
+
+        return Optional.ofNullable(reservationRepository.findByUserIdAndIsReturnedFalse(id));
     }
 }

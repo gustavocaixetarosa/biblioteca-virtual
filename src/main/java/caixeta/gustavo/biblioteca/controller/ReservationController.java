@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -38,11 +39,9 @@ public class ReservationController {
             Reservation reservation = reservationService.createReservation(userId, bookId);
             return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
         } catch (IllegalArgumentException e) {
-            // Quando o livro não está disponível
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Collections.singletonMap("message", e.getMessage()));
         } catch (EntityNotFoundException e) {
-            // Quando o usuário ou o livro não for encontrado
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Collections.singletonMap("message", e.getMessage()));
         }
@@ -53,6 +52,15 @@ public class ReservationController {
         List<Reservation> reservationList = reservationService.getReservationsByUser(id);
 
         return ResponseEntity.ok().body(reservationList);
+    }
+
+    @GetMapping("/user/open/{id}")
+    public ResponseEntity<List<Reservation>> getNonReturnedReservationsByUser(@PathVariable Long id){
+        Optional<List<Reservation>> nonReturned = reservationService.getNonReturned(id);
+        if(nonReturned.isPresent())
+            return ResponseEntity.ok(nonReturned.get());
+        else
+            throw new RuntimeException("All books was returned!!!");
     }
 
     @PostMapping("/return/{id}")

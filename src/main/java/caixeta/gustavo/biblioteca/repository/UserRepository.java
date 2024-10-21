@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findUserByDocument(String document);
+//
+//    long countReservationsByUser_Id(Long userId);
 }

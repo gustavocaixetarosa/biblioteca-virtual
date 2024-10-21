@@ -21,43 +21,45 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<List<BookDTO>> getBooks() {
-        List<Book> allBooks = bookService.listAll(); // Obter todos os livros como entidades
-        List<BookDTO> bookDTOs = allBooks.stream() // Converter para DTOs
-                .map(book -> bookService.convertToDTO(book)) // Usar um método para converter
+        List<Book> allBooks = bookService.listAll();
+        List<BookDTO> allBooksDTO = allBooks.stream()
+                .map(book -> bookService.convertToDTO(book))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(bookDTOs); // Retornar a lista de DTOs
+        return ResponseEntity.ok(allBooksDTO);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id){
-        Book foundBook = bookService.searchById(id);
-        return ResponseEntity.ok(foundBook);
+    public ResponseEntity<BookDTO> getBookById(@PathVariable Long id){
+        BookDTO foundBookDTO = this.bookService.convertToDTO(bookService.searchById(id));
+        return ResponseEntity.ok(foundBookDTO);
     }
 
 
     @GetMapping("/title/{title}")
-    public ResponseEntity<List<Book>> getBookByTitle(@PathVariable String title) {
+    public ResponseEntity<List<BookDTO>> getBookByTitle(@PathVariable String title) {
         List<Book> livros = bookService.searchByTitle(title);
-        return ResponseEntity.ok(livros);
+        List<BookDTO> listDTO = livros.stream().map(bookService::convertToDTO).toList();
+        return ResponseEntity.ok(listDTO);
     }
 
     @GetMapping("/author/{author}")
-    public ResponseEntity<List<Book>> getBookByAuthor(@PathVariable String author) {
-        List<Book> livros = bookService.searchByAuthor(author);
-        return ResponseEntity.ok(livros);
+    public ResponseEntity<List<BookDTO>> getBookByAuthor(@PathVariable String author) {
+        List<Book> books = bookService.searchByAuthor(author);
+        List<BookDTO> bookdsDTO = books.stream().map(bookService::convertToDTO).toList();
+        return ResponseEntity.ok(bookdsDTO);
     }
 
 
     @PostMapping
     public ResponseEntity<Book> saveBook(@RequestBody @Valid Book book){
-        Book savedBook = bookService.saveBook(book);
+        Book savedBook = bookService.registerBook(book);
         return ResponseEntity.status(HttpStatus.CREATED).body(book);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody @Valid Book book) {
         book.setId(id);
-        Book updatedBook = bookService.saveBook(book);
+        Book updatedBook = bookService.updateBook(book);
         return ResponseEntity.ok(updatedBook);
     }
 

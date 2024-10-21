@@ -32,6 +32,8 @@ public class User {
 
     private String cep;
 
+    private int maxReservation = 2;
+
     @JsonManagedReference
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Reservation> reservations;
